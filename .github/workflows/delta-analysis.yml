@@ -18,7 +18,6 @@ jobs:
         CODESCENE_PASSWORD: ${{ secrets.CODESCENE_PASSWORD }}
         CODESCENE_DELTA_ANALYSIS_URL: "https://48bf4d02.ngrok.io/projects/32/delta-analysis"
       run: |
-        git log --oneline
         # Extract previous commit from event
         export PREVIOUS_COMMIT=$(jq -r '.before' < $GITHUB_EVENT_PATH)
         # Check required env vars
