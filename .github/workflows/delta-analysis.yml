@@ -11,13 +11,17 @@ jobs:
       image: empear/codescene-ci-cd:latest  
 
     steps:
+    - uses: actions/checkout@v1
     - name: Run delta analysis on push
       env:
         CODESCENE_USER: ${{ secrets.CODESCENE_USER }}
         CODESCENE_PASSWORD: ${{ secrets.CODESCENE_PASSWORD }}
         CODESCENE_DELTA_ANALYSIS_URL: "https://48bf4d02.ngrok.io/projects/32/delta-analysis"
       run: |
-        export PREVIOUS_COMMIT=$(git rev-parse HEAD^)
+        git log --oneline
+        # Extract previous commit from event
+        export PREVIOUS_COMMIT=$(jq -r '.before' < $GITHUB_EVENT_PATH)
+        # Check required env vars
         if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then 
           echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
           exit 1
@@ -30,6 +34,7 @@ jobs:
           echo "No value specified for CODESCENE_PASSWORD!"
           exit 1
         fi
+        # Perform analysis
         codescene-ci-cd.sh \
           --codescene-delta-analysis-url $CODESCENE_DELTA_ANALYSIS_URL \
           --codescene-user $CODESCENE_USER \
