@@ -1,0 +1,48 @@
+name: Run Delta Analysis
+
+on: [push]
+
+jobs:
+  build:
+    
+    runs-on: ubuntu-latest
+    
+    container:
+      image: empear/codescene-ci-cd:latest  
+
+    steps:
+    - name: Run delta analysis on push
+      env:
+        CODESCENE_USER: ${{ secrets.CODESCENE_USER }}
+        CODESCENE_PASSWORD: ${{ secrets.CODESCENE_PASSWORD }}
+        CODESCENE_DELTA_ANALYSIS_URL: "https://48bf4d02.ngrok.io/projects/32/delta-analysis"
+      run: |
+        export PREVIOUS_COMMIT=$(git rev-parse HEAD^)
+        if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then 
+          echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
+          exit 1
+        fi
+        if [[ -z "$CODESCENE_USER" ]] ; then 
+          echo "No value specified for CODESCENE_USER!"
+          exit 1
+        fi
+        if [[ -z "$CODESCENE_PASSWORD" ]] ; then 
+          echo "No value specified for CODESCENE_PASSWORD!"
+          exit 1
+        fi
+        codescene-ci-cd.sh \
+          --codescene-delta-analysis-url $CODESCENE_DELTA_ANALYSIS_URL \
+          --codescene-user $CODESCENE_USER \
+          --codescene-password $CODESCENE_PASSWORD \
+          --codescene-repository ${GITHUB_REPOSITORY#*/} \
+          --fail-on-failed-goal \
+          --fail-on-declining-code-health \
+          --fail-on-high-risk \
+          --analyze-individual-commits \
+          --risk-threshold ${CODESCENE_RISK_THRESHOLD-7} \
+          --coupling-threshold-percent ${CODESCENE_COUPLING_THRESHOLD_PERCENT-80} \
+          --current-commit $GITHUB_SHA \
+          --previous-commit $PREVIOUS_COMMIT \
+          --http-timeout ${CODESCENE_TIMEOUT-30000} \
+          --log-result
+       
