@@ -1796,3 +1796,45 @@ export {
   commitAttachRef,
   commitDetachRef,
 };
+function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber | null) {
+  const ref = current.ref;
+  if (ref !== null) {
+    if (typeof ref === 'function') {
+      if (__DEV__) {
+        invokeGuardedCallback(null, ref, null, null);
+        if (hasCaughtError()) {
+          const refError = clearCaughtError();
+          captureCommitPhaseError(current, nearestMountedAncestor, refError);
+        }
+      } else {
+        try {
+          ref(null);
+        } catch (refError) {
+          captureCommitPhaseError(current, nearestMountedAncestor, refError);
+        }
+      }
+    } else {
+      ref.current = null;
+    }
+  }
+}
+
+function safelyCallDestroy(
+  current: Fiber,
+  nearestMountedAncestor: Fiber | null,
+  destroy: () => void,
+) {
+  if (__DEV__) {
+    invokeGuardedCallback(null, destroy, null);
+    if (hasCaughtError()) {
+      const error = clearCaughtError();
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
+    }
+  } else {
+    try {
+      destroy();
+    } catch (error) {
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
+    }
+  }
+}
