@@ -519,3 +519,196 @@ static void destroy(zhandle_t *zh)
     destroy_zk_hashtable(zh->active_child_watchers);
     addrvec_free(&zh->addrs_old);
     addrvec_free(&zh->addrs_new);
+	
+	#ifdef HAVE_CYRUS_SASL_H
+    if (zh->sasl_client) {
+        zoo_sasl_client_destroy(zh->sasl_client);
+        zh->sasl_client = NULL;
+    }
+#endif /* HAVE_CYRUS_SASL_H */
+}
+
+static void setup_random()
+{
+#ifndef _WIN32          // TODO: better seed
+    int seed;
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd == -1) {
+        seed = getpid();
+    } else {
+        int seed_len = 0;
+
+        /* Enter a loop to fill in seed with random data from /dev/urandom.
+         * This is done in a loop so that we can safely handle short reads
+         * which can happen due to signal interruptions.
+         */
+        while (seed_len < sizeof(seed)) {
+            /* Assert we either read something or we were interrupted due to a
+             * signal (errno == EINTR) in which case we need to retry.
+             */
+            int rc = read(fd, &seed + seed_len, sizeof(seed) - seed_len);
+            assert(rc > 0 || errno == EINTR);
+            if (rc > 0) {
+                seed_len += rc;
+            }
+        }
+        close(fd);
+    }
+    srandom(seed);
+    srand48(seed);
+#endif
+}
+
+#ifndef __CYGWIN__
+/**
+ * get the errno from the return code
+ * of get addrinfo. Errno is not set
+ * with the call to getaddrinfo, so thats
+ * why we have to do this.
+ */
+static int getaddrinfo_errno(int rc) {
+    switch(rc) {
+    case EAI_NONAME:
+// ZOOKEEPER-1323 EAI_NODATA and EAI_ADDRFAMILY are deprecated in FreeBSD.
+#if defined EAI_NODATA && EAI_NODATA != EAI_NONAME
+    case EAI_NODATA:
+#endif
+        return ENOENT;
+    case EAI_MEMORY:
+        return ENOMEM;
+    default:
+        return EINVAL;
+    }
+}
+#endif
+
+/**
+ * Count the number of hosts in the connection host string. This assumes it's
+ * a well-formed connection string whereby each host is separated by a comma.
+ */
+static int count_hosts(char *hosts)
+{
+    uint32_t count = 0;
+    char *loc = hosts;
+    if (!hosts || strlen(hosts) == 0) {
+        return 0;
+    }
+
+    while ((loc = strchr(loc, ','))) {
+        count++;
+        loc+=1;
+    }
+
+    return count+1;
+}
+
+/**
+ * Resolve hosts and populate provided address vector with shuffled results.
+ * The contents of the provided address vector will be initialized to an
+ * empty state.
+ */
+static int resolve_hosts(const zhandle_t *zh, const char *hosts_in, addrvec_t *avec)
+{
+    int rc = ZOK;
+    char *host = NULL;
+    char *hosts = NULL;
+    int num_hosts = 0;
+    char *strtok_last = NULL;
+
+    if (zh == NULL || hosts_in == NULL || avec == NULL) {
+        return ZBADARGUMENTS;
+    }
+
+    // initialize address vector
+    addrvec_init(avec);
+
+    hosts = strdup(hosts_in);
+    if (hosts == NULL) {
+        LOG_ERROR(LOGCALLBACK(zh), "out of memory");
+        errno=ENOMEM;
+        rc=ZSYSTEMERROR;
+        goto fail;
+    }
+
+    num_hosts = count_hosts(hosts);
+    if (num_hosts == 0) {
+        free(hosts);
+        return ZOK;
+    }
+
+    // Allocate list inside avec
+    rc = addrvec_alloc_capacity(avec, num_hosts);
+    if (rc != 0) {
+        LOG_ERROR(LOGCALLBACK(zh), "out of memory");
+        errno=ENOMEM;
+        rc=ZSYSTEMERROR;
+        goto fail;
+    }
+
+    host = strtok_r(hosts, ",", &strtok_last);
+    while(host) {
+        char *port_spec = strrchr(host, ':');
+        char *end_port_spec;
+        int port;
+        if (!port_spec) {
+            LOG_ERROR(LOGCALLBACK(zh), "no port in %s", host);
+            errno=EINVAL;
+            rc=ZBADARGUMENTS;
+            goto fail;
+        }
+        *port_spec = '\0';
+        port_spec++;
+        port = strtol(port_spec, &end_port_spec, 0);
+        if (!*port_spec || *end_port_spec || port == 0) {
+            LOG_ERROR(LOGCALLBACK(zh), "invalid port in %s", host);
+            errno=EINVAL;
+            rc=ZBADARGUMENTS;
+            goto fail;
+        }
+#if defined(__CYGWIN__)
+        // sadly CYGWIN doesn't have getaddrinfo
+        // but happily gethostbyname is threadsafe in windows
+        {
+        struct hostent *he;
+        char **ptr;
+        struct sockaddr_in *addr4;
+
+        he = gethostbyname(host);
+        if (!he) {
+            LOG_ERROR(LOGCALLBACK(zh), "could not resolve %s", host);
+            errno=ENOENT;
+            rc=ZBADARGUMENTS;
+            goto fail;
+        }
+
+        // Setup the address array
+        for(ptr = he->h_addr_list;*ptr != 0; ptr++) {
+            if (addrs->count == addrs->capacity) {
+                rc = addrvec_grow_default(addrs);
+                if (rc != 0) {
+                    LOG_ERROR(LOGCALLBACK(zh), "out of memory");
+                    errno=ENOMEM;
+                    rc=ZSYSTEMERROR;
+                    goto fail;
+                }
+            }
+            addr = &addrs->list[addrs->count];
+            addr4 = (struct sockaddr_in*)addr;
+            addr->ss_family = he->h_addrtype;
+            if (addr->ss_family == AF_INET) {
+                addr4->sin_port = htons(port);
+                memset(&addr4->sin_zero, 0, sizeof(addr4->sin_zero));
+                memcpy(&addr4->sin_addr, *ptr, he->h_length);
+                zh->addrs.count++;
+            }
+#if defined(AF_INET6)
+            else if (addr->ss_family == AF_INET6) {
+                struct sockaddr_in6 *addr6;
+
+                addr6 = (struct sockaddr_in6*)addr;
+                addr6->sin6_port = htons(port);
+                addr6->sin6_scope_id = 0;
+                addr6->sin6_flowinfo = 0;
+                memcpy(&addr6->sin6_addr, *ptr, he->h_length);
+                zh->addrs.count++;
+				}
