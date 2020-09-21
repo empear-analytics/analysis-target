@@ -375,6 +375,8 @@ function commitHookEffectListMount(tag: number, finishedWork: Fiber) {
   }
 }
 
+
+
 function schedulePassiveEffects(finishedWork: Fiber) {
   const updateQueue: FunctionComponentUpdateQueue | null = (finishedWork.updateQueue: any);
   const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
