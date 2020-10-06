@@ -20,5 +20,5 @@ jobs:
           fetch-depth: 2
       - name: Install EB CLI
         run: |
-          git describe
           git  log --pretty=oneline
+          git describe --all
