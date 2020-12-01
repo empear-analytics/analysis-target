@@ -9,6 +9,7 @@ pipeline {
         stage('Run Delta Analysis') {
             steps {
                 sh '''
+		  echo hoho
                   CODESCENE_DELTA_ANALYSIS_URL=http://127.0.0.1:3003/projects/20/delta-analysis
                   CODESCENE_USER=bot
                   CODESCENE_PASSWORD=secret
@@ -19,10 +20,6 @@ pipeline {
                   fi
                   if [[ -z "$CODESCENE_USER" ]] ; then
                     echo "No value specified for CODESCENE_USER!"
-                    exit 1
-                  fi
-                  if [[ -z "$CHANGE_TARGET" ]] ; then
-                    echo "No value specified for CHANGE_TARGET (must run in a PR)!"
                     exit 1
                   fi
                   if [[ -z "$CODESCENE_PASSWORD" ]] ; then
