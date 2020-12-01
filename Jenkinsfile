@@ -36,7 +36,7 @@ pipeline {
                     --fail-on-declining-code-health \
                     --analyze-branch-diff \
                     --current-commit $GIT_COMMIT \
-                    --base-revision origin/$BASE_REVISION \
+                    --base-revision $BASE_REVISION \
                     --log-result
                     '''
             }
