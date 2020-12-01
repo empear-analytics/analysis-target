@@ -10,7 +10,7 @@ pipeline {
             steps {
                 sh '''
 		  echo hoho
-                  CODESCENE_DELTA_ANALYSIS_URL=http://127.0.0.1:3003/projects/20/delta-analysis
+                  CODESCENE_DELTA_ANALYSIS_URL=http://host.docker.internal:3003/projects/20/delta-analysis
                   CODESCENE_USER=bot
                   CODESCENE_PASSWORD=secret
 		  BASE_REVISION=origin/master
