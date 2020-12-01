@@ -5,14 +5,16 @@ pipeline {
             args '--entrypoint='
         }
     }
+    environment {
+        CODESCENE_USER = credentials('CODESCENE_USER ')
+        CODESCENE_PASSWORD = credentials('CODESCENE_PASSWORD ')
+    }
     stages {
         stage('Run Delta Analysis') {
             steps {
                 sh '''
 		  echo hoho
                   CODESCENE_DELTA_ANALYSIS_URL=http://host.docker.internal:3003/projects/20/delta-analysis
-                  CODESCENE_USER=bot
-                  CODESCENE_PASSWORD=secret
 		  BASE_REVISION=origin/master
                   if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then
                     echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
