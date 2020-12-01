@@ -12,6 +12,7 @@ pipeline {
                   CODESCENE_DELTA_ANALYSIS_URL=http://127.0.0.1:3003/projects/20/delta-analysis
                   CODESCENE_USER=bot
                   CODESCENE_PASSWORD=secret
+		  BASE_REVISION=origin/master
                   if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then
                     echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
                     exit 1
@@ -38,7 +39,7 @@ pipeline {
                     --fail-on-declining-code-health \
                     --analyze-branch-diff \
                     --current-commit $GIT_COMMIT \
-                    --base-revision origin/$CHANGE_TARGET \
+                    --base-revision origin/$BASE_REVISION \
                     --log-result
                     '''
             }
