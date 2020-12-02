@@ -29,6 +29,10 @@ pipeline {
                     echo "No value specified for CODESCENE_PASSWORD!"
                     exit 1
                   fi
+                  if [[ -z "$CHANGE_ID" ]] ; then
+                    echo "No value specified for CHANGE_ID!"
+                    exit 1
+                  fi
 		  REPO_NAME=$(basename `git config --get remote.origin.url` .git)
                   codescene-ci-cd.sh \
                     --codescene-delta-analysis-url ${CODESCENE_DELTA_ANALYSIS_URL} \
