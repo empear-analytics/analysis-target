@@ -14,7 +14,6 @@ pipeline {
         stage('Run Delta Analysis') {
             steps {
                 sh '''
-		  echo $CHANGE_ID
                   CODESCENE_DELTA_ANALYSIS_URL=http://host.docker.internal:3003/projects/20/delta-analysis
                   if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then
                     echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
