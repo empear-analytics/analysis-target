@@ -46,7 +46,7 @@ pipeline {
 		    --create-github-comment \
 		    --github-api-url "https://api.github.com" \
 		    --github-api-token ${GITHUB_TOKEN} \
-		    --github-owner empear \
+		    --github-owner empear-analytics \
 		    --github-repo ${REPO_NAME} \
 		    --github-pull-request-id ${CHANGE_ID} \
                     --log-result
