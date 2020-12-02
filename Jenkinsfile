@@ -16,7 +16,6 @@ pipeline {
                 sh '''
 		  echo $CHANGE_ID
                   CODESCENE_DELTA_ANALYSIS_URL=http://host.docker.internal:3003/projects/20/delta-analysis
-		  BASE_REVISION=origin/master
                   if [[ -z "$CODESCENE_DELTA_ANALYSIS_URL" ]] ; then
                     echo "No value specified for CODESCENE_DELTA_ANALYSIS_URL!"
                     exit 1
@@ -43,7 +42,7 @@ pipeline {
                     --fail-on-declining-code-health \
                     --analyze-branch-diff \
                     --current-commit ${GIT_COMMIT} \
-                    --base-revision origin\${CHANGE_TARGET} \
+                    --base-revision origin/${CHANGE_TARGET} \
 		    --create-github-comment \
 		    --github-api-url "https://api.github.com" \
 		    --github-api-token ${GITHUB_TOKEN} \
