@@ -31,7 +31,9 @@ pipeline {
                     echo "No value specified for CHANGE_ID!"
                     exit 1
                   fi
-		  REPO_NAME=$(basename `git config --get remote.origin.url` .git)
+		  ORIGIN_URL=$(git config --get remote.origin.url)
+		  REPO_NAME=$(basename ${ORIGIN_URL} .git)
+		  OWNER=$(echo ${ORIGIN_URL} | sed -E -e 's#/[^/]*$##' -e 's#.*/##')
                   codescene-ci-cd.sh \
                     --codescene-delta-analysis-url ${CODESCENE_DELTA_ANALYSIS_URL} \
                     --codescene-user ${CODESCENE_USER} \
