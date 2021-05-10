@@ -12,13 +12,5 @@ inf f(){
   	}
   }
 
-  if (bumpy) {
-  	while (make_more_bumps) {
-  		if (cancel_it) {
-  			break;
-  		}
-  	}
-  }
-
   return 0;
 }
