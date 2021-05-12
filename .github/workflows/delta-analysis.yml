@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     container:
-      image: empear/codescene-ci-cd:latest  
+      image: empear/codescene-ci-cd:unstable  
 
     steps:
     - uses: actions/checkout@v1
@@ -24,7 +24,6 @@ jobs:
         CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DELTA_ANALYSIS_URL }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git branch -a
         # Extract data from event
         export PREVIOUS_COMMIT=$(jq -r '.before' < ${GITHUB_EVENT_PATH})
         export PR_NUMBER=$(jq -r '.pull_request.number' < ${GITHUB_EVENT_PATH})
