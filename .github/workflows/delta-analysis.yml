@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     container:
-      image: empear/codescene-ci-cd:unstable  
+      image: empear/codescene-ci-cd:latest 
 
     steps:
     - uses: actions/checkout@v1
