@@ -22,6 +22,12 @@ int f()
    }
  }
 
+ if (x) {
+  do {
+   printit(x);
+  } while (y < 2);
+ }
+
   return 0;
 } 
 
