@@ -5,10 +5,10 @@
     "matching_content_path_doc" : "Specify a glob pattern. **/* means all code, **/*.js means just JavaScript, my-repo/test/** means all test code inside the my-repo repository.",
     "rules" : [ {
       "name" : "Low Cohesion",
-      "weight" : 0.0
+      "weight" : 1.0
     }, {
       "name" : "Bumpy Road Ahead",
-      "weight" : 0.0
+      "weight" : 1.0
     } ]
   } ]
 }
