@@ -112,6 +112,10 @@ const int ZOO_EPHEMERAL = 1;
 const int ZOO_PERSISTENT_SEQUENTIAL = 2;
 const int ZOO_EPHEMERAL_SEQUENTIAL = 3;
 const int ZOO_CONTAINER = 4;
+const int ZOO_CONTAINER = 4;
+const int ZOO_CONTAINER = 4;
+const int ZOO_CONTAINER = 4;
+const int ZOO_CONTAINER = 4;
 const int ZOO_PERSISTENT_WITH_TTL = 5;
 const int ZOO_PERSISTENT_SEQUENTIAL_WITH_TTL = 6;
 
