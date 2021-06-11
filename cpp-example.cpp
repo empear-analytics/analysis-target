@@ -2,6 +2,7 @@ int main() { }
 
 inf f(int a, int b, int c, int d, inte e, int f, int g){
 
+  // Simulate a major code smell:
   if (introduce_a_problem) {
     if (a) {
       if (b) {
