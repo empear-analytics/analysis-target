@@ -80,52 +80,6 @@ def is_compatible_video(mime_type: str) -> bool:
     return mime_type in ["video/mp4"]
 
 
-class InputUI:
-    def __init__(self, session_state: SessionState, input_class: Type[BaseModel]):
-        self._session_state = session_state
-        self._input_class = input_class
-
-        self._schema_properties = input_class.schema(by_alias=True).get(
-            "properties", {}
-        )
-        self._schema_references = input_class.schema(by_alias=True).get(
-            "definitions", {}
-        )
-
-        # TODO: check if state has input data
-
-    def render_ui(self) -> None:
-        if has_input_ui_renderer(self._input_class):
-            # The input model has a rendering function
-            # The rendering also returns the current state of input data
-            self._session_state.input_data = self._input_class.render_input_ui(  # type: ignore
-                st, self._session_state.input_data
-            ).dict()
-            return
-
-        required_properties = self._input_class.schema(by_alias=True).get(
-            "required", []
-        )
-
-        for property_key in self._schema_properties.keys():
-            streamlit_app = st.sidebar
-            property = self._schema_properties[property_key]
-
-            if not property.get("title"):
-                # Set property key as fallback title
-                property["title"] = name_to_title(property_key)
-
-            if property_key in required_properties:
-                streamlit_app = st
-
-            try:
-                self._store_value(
-                    property_key,
-                    self._render_property(streamlit_app, property_key, property),
-                )
-            except Exception:
-                pass
-
     def _get_default_streamlit_input_kwargs(self, key: str, property: Dict) -> Dict:
         streamlit_kwargs = {
             "label": property.get("title"),
