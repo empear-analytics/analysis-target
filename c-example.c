@@ -1,5 +1,6 @@
 #include <stdio.h>
-int f() {
+
+int a_long_fn(char b) {
 
 	do_a();
 	do_a();
@@ -84,4 +85,6 @@ int f() {
 
 int main(int argc, char *argv[])
 {
+	return a_long_fn(argv[0][0])
 }
+
