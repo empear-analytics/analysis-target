@@ -60,6 +60,24 @@ int f() {
 		do_d();	
 	}
 
+	if (a > b) {
+		do_e();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+		do_d();	
+	}
+
 	return 0;
 } 
 
