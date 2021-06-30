@@ -165,7 +165,7 @@ int a_long_fn(char b) {
 
 int main(int argc, char *argv[])
 {
-	return a_long_fn(argv[0][0])
+	return a_long_fn(argv[0][0]);
 }
 
 
@@ -331,4 +331,39 @@ int another_long_fn(char b) {
 	return 0;
 } 
 
+int shorty_1(int argc, char *argv[])
+{
+	return a_long_fn(argv[0][0]);
+}
 
+int shorty_2(void)
+{
+	return 2;
+}
+
+int shorty_3(void)
+{
+	return 2;
+}
+
+int shorty_4(void)
+{
+	return 2;
+}
+
+int shorty_5(void)
+{
+	return 2;
+}
+
+
+int shorty_6(int b)
+{
+	return 2;
+}
+
+
+int shorty_7(int b)
+{
+	return 2;
+}
