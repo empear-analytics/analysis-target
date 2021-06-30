@@ -79,6 +79,86 @@ int a_long_fn(char b) {
 		do_d();	
 	}
 
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+
+
+
+	do_a();
+	do_a();
+	do_a();
+
+
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+
+
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+
+		do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+	do_a();
+
+
+
+	do_a();
+	do_a();
+	do_a();
+
+
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+	do_b();
+
+
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+	do_c();
+
 	return 0;
 } 
 
