@@ -154,32 +154,6 @@ static __attribute__ ((unused)) const char* state2String(int state){
     return "INVALID_STATE";
 }
 
-const int ZOO_CREATED_EVENT = CREATED_EVENT_DEF;
-const int ZOO_DELETED_EVENT = DELETED_EVENT_DEF;
-const int ZOO_CHANGED_EVENT = CHANGED_EVENT_DEF;
-const int ZOO_CHILD_EVENT = CHILD_EVENT_DEF;
-const int ZOO_SESSION_EVENT = SESSION_EVENT_DEF;
-const int ZOO_NOTWATCHING_EVENT = NOTWATCHING_EVENT_DEF;
-static __attribute__ ((unused)) const char* watcherEvent2String(int ev){
-    switch(ev){
-    case 0:
-        return "ZOO_ERROR_EVENT";
-    case CREATED_EVENT_DEF:
-        return "ZOO_CREATED_EVENT";
-    case DELETED_EVENT_DEF:
-        return "ZOO_DELETED_EVENT";
-    case CHANGED_EVENT_DEF:
-        return "ZOO_CHANGED_EVENT";
-    case CHILD_EVENT_DEF:
-        return "ZOO_CHILD_EVENT";
-    case SESSION_EVENT_DEF:
-        return "ZOO_SESSION_EVENT";
-    case NOTWATCHING_EVENT_DEF:
-        return "ZOO_NOTWATCHING_EVENT";
-    }
-    return "INVALID_EVENT";
-}
-
 const int ZOO_PERM_READ = 1 << 0;
 const int ZOO_PERM_WRITE = 1 << 1;
 const int ZOO_PERM_CREATE = 1 << 2;
