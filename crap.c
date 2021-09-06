@@ -1630,3 +1630,99 @@ void free_duplicate_path(const char *free_path, const char* path) {
         free((void*)free_path);
     }
 }
+static int get_next_server_in_reconfig(zhandle_t *zh)
+{
+    int take_new = drand48() <= zh->pNew;
+
+    LOG_DEBUG(LOGCALLBACK(zh), "[OLD] count=%d capacity=%d next=%d hasnext=%d",
+               zh->addrs_old.count, zh->addrs_old.capacity, zh->addrs_old.next,
+               addrvec_hasnext(&zh->addrs_old));
+    LOG_DEBUG(LOGCALLBACK(zh), "[NEW] count=%d capacity=%d next=%d hasnext=%d",
+               zh->addrs_new.count, zh->addrs_new.capacity, zh->addrs_new.next,
+               addrvec_hasnext(&zh->addrs_new));
+
+    // Take one of the new servers if we haven't tried them all yet
+    // and either the probability tells us to connect to one of the new servers
+    // or if we already tried them all then use one of the old servers
+    if (addrvec_hasnext(&zh->addrs_new)
+            && (take_new || !addrvec_hasnext(&zh->addrs_old)))
+    {
+        addrvec_next(&zh->addrs_new, &zh->addr_cur);
+        LOG_DEBUG(LOGCALLBACK(zh), "Using next from NEW=%s", format_endpoint_info(&zh->addr_cur));
+        return 0;
+    }
+
+    // start taking old servers
+    if (addrvec_hasnext(&zh->addrs_old)) {
+        addrvec_next(&zh->addrs_old, &zh->addr_cur);
+        LOG_DEBUG(LOGCALLBACK(zh), "Using next from OLD=%s", format_endpoint_info(&zh->addr_cur));
+        return 0;
+    }
+
+    LOG_DEBUG(LOGCALLBACK(zh), "Failed to find either new or old");
+    memset(&zh->addr_cur, 0, sizeof(zh->addr_cur));
+    return 1;
+}
+
+/**
+ * Cycle through our server list to the correct 'next' server. The 'next' server
+ * to connect to depends upon whether we're in a 'reconfig' mode or not. Reconfig
+ * mode means we've upated the server list and are now trying to find a server
+ * to connect to. Once we get connected, we are no longer in the reconfig mode.
+ * Similarly, if we try to connect to all the servers in the new configuration
+ * and failed, reconfig mode is set to false.
+ *
+ * For more algorithm details, see get_next_server_in_reconfig.
+ */
+void zoo_cycle_next_server(zhandle_t *zh)
+{
+    // NOTE: guard access to {hostname, addr_cur, addrs, addrs_old, addrs_new, last_resolve, resolve_delay_ms}
+    lock_reconfig(zh);
+
+    memset(&zh->addr_cur, 0, sizeof(zh->addr_cur));
+
+    if (zh->reconfig)
+    {
+        if (get_next_server_in_reconfig(zh) == 0) {
+            unlock_reconfig(zh);
+            return;
+        }
+
+        // tried all new and old servers and couldn't connect
+        zh->reconfig = 0;
+    }
+
+    addrvec_next(&zh->addrs, &zh->addr_cur);
+
+    unlock_reconfig(zh);
+
+    return;
+}
+
+/**
+ * Get the host:port for the server we are currently connecting to or connected
+ * to. This is largely for testing purposes but is also generally useful for
+ * other client software built on top of this client.
+ */
+const char* zoo_get_current_server(zhandle_t* zh)
+{
+    const char *endpoint_info = NULL;
+
+    // NOTE: guard access to {hostname, addr_cur, addrs, addrs_old, addrs_new, last_resolve, resolve_delay_ms}
+    // Need the lock here as it is changed in update_addrs()
+    lock_reconfig(zh);
+
+    endpoint_info = format_endpoint_info(&zh->addr_cur);
+    unlock_reconfig(zh);
+    return endpoint_info;
+}
+
+/**
+ * deallocated the free_path only its beeen allocated
+ * and not equal to path
+ */
+void free_duplicate_path(const char *free_path, const char* path) {
+    if (free_path != path) {
+        free((void*)free_path);
+    }
+}
