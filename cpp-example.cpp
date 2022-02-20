@@ -18,6 +18,10 @@ int another(int a, double c) {
   return a;
 }
 
+void lots_of_args(int a, int b, int c, double d, float e, const char* f) {
+  return a + b;
+}
+
 void finally(std::string a) {
   print(a);
 }
