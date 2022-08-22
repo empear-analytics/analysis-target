@@ -7,6 +7,9 @@
       "name" : "Low Cohesion",
       "weight" : 0.0
     }, {
+      "name" : "Complex Method",
+      "weight" : 0.0
+    }, {
       "name" : "Bumpy Road Ahead",
       "weight" : 1.0
     } ],
