@@ -14,11 +14,11 @@
       "weight" : 1.0
     } ],
      "thresholds" : [ {
-      "name" : "bumpy_road_min_bumps_for_warning",
+      "name" : "function_bumpy_road_bumps_for_warning",
       "value" : 3
     }, {
-      "name" : "bumpy_road_min_nesting_level_depth",
-      "value" : 3
+      "name" : "file_mean_cyclomatic_complexity_warning",
+      "value" : 8
     }
     ]
   } ]
