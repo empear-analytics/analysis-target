@@ -8,10 +8,10 @@
       "weight" : 0.0
     }, {
       "name" : "Complex Method",
-      "weight" : 0.0
+      "weight" : 1.0
     }, {
       "name" : "Bumpy Road Ahead",
-      "weight" : 0.0
+      "weight" : 1.0
     } ],
      "thresholds" : [ {
       "name" : "function_bumpy_road_bumps_for_warning",
@@ -19,6 +19,9 @@
     }, {
       "name" : "file_mean_cyclomatic_complexity_warning",
       "value" : 8
+    }, {
+  	"name" : "function_cyclomatic_complexity_warning",
+	"value" : 6
     }
     ]
   } ]
