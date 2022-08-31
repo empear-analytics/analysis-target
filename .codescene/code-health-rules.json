@@ -21,7 +21,7 @@
       "value" : 8
     }, {
   	"name" : "function_cyclomatic_complexity_warning",
-	"value" : 6
+	"value" : 18 
     }
     ]
   } ]

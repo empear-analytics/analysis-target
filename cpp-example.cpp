@@ -7,6 +7,11 @@ WriteResult performWrite() {
   if (x && y && c && d) {
     while (x) {
       if (x > 2) {
+
+        if (one_more_go) {
+          c = 2;
+        }
+
         return;
       }
     }
