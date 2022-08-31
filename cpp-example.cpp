@@ -1,4 +1,4 @@
-WriteResult performWrite() override {
+WriteResult performWrite() {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
@@ -51,7 +51,7 @@ WriteResult performWrite() override {
       flags);
 }
 
-WriteResult performWrite2() override {
+WriteResult performWrite2() {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
@@ -104,7 +104,7 @@ WriteResult performWrite2() override {
       flags);
 }
 
-WriteResult performWrite3() override {
+WriteResult performWrite3() {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
