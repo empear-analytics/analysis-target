@@ -162,4 +162,45 @@ WriteResult performWrite3() {
       flags);
 }
 
+// Let's make some Primitive Obsession here.
+//
+
+int a(int a, int b, int c) {
+  return a + b;
+}
+
+
+int b(int a, int b, int c) {
+  return a + b;
+}
+
+
+int c(int a, int b, int c) {
+  return a + b;
+}
+
+
+int d(int a, int b, int c) {
+  return a + b;
+}
+
+
+int e(int a, int b, int c) {
+  return a + b;
+}
+
+
+int f(int a, int b, int c) {
+  return a + b;
+}
+
+
+int g(int a, int b, int c) {
+  return a + b;
+}
+
+
+int h(int a, int b, int c) {
+  return a + b;
+}
 
