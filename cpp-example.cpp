@@ -1,4 +1,4 @@
-WriteResult performWrite() {
+WriteResult performWrite(Obj b) {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
@@ -56,7 +56,7 @@ WriteResult performWrite() {
       flags);
 }
 
-WriteResult performWrite2() {
+WriteResult performWrite2(Obj b) {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
@@ -109,7 +109,7 @@ WriteResult performWrite2() {
       flags);
 }
 
-WriteResult performWrite3() {
+WriteResult performWrite3(Obj b) {
   WriteFlags writeFlags = flags_;
   if (getNext() != nullptr) {
     writeFlags |= WriteFlags::CORK;
@@ -196,11 +196,6 @@ int f(int a, int b, int c) {
 
 
 int g(int a, int b, int c) {
-  return a + b;
-}
-
-
-int h(int a, int b, int c) {
   return a + b;
 }
 
