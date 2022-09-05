@@ -17,11 +17,17 @@
       "name" : "function_bumpy_road_bumps_for_warning",
       "value" : 3
     }, {
+      "name" : "file_primitive_obsession_percentage_for_warning",
+      "value": 80
+    }, {
       "name" : "file_mean_cyclomatic_complexity_warning",
       "value" : 8
     }, {
   	"name" : "function_cyclomatic_complexity_warning",
 	"value" : 18 
+    }, {
+       "name" : "function_nesting_depth_warning",
+	"value" : 6
     }
     ]
   } ]
