@@ -351,6 +351,19 @@ def _mark_purchased(transaction: DbTransaction) -> None:
                 except Exception as exc:
                     logger.error("Failed to mark mtb_product {mp_id} as purchase", exc_info=exc)
 
+def _mark_purchased2(transaction: DbTransaction) -> None:
+    """Mark products and transaction as purchased"""
+    transaction.state = TransactionState.PURCHASED
+    for item in transaction.items:
+        if item.mtb_product_ids:
+            for mp_id in item.mtb_product_ids:
+                try:
+                    mtb_prod = get_db_mtb_product(None, mp_id, all=True, refresh=False)
+                    mtb_prod.purchased = True
+                    mtb_prod.save()
+                except Exception as exc:
+                    logger.error("Failed to mark mtb_product {mp_id} as purchase", exc_info=exc)
+
 
 def _finalize_vendor_purchase(auth_ctx: AuthorizationContext, transaction: DbTransaction, finalization_data: str) \
         -> None:
