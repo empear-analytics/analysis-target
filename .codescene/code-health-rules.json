@@ -27,5 +27,17 @@
       "value" : "50"
     } 
     ]
+  }, {
+    "matching_content_path" : "**/*.js",
+    "matching_content_path_doc" : "Specify a glob pattern. **/* means all code, **/*.js means just JavaScript, my-repo/test/** means all test code inside the my-repo repository.",
+    "rules" : [],
+     "thresholds" : [ {
+      "name" : "function_duplication_min_lines_of_code_for_check",
+      "value" : "30"
+    }, {
+      "name" : "function_duplication_min_similarity_percentage",
+      "value" : "50"
+    } 
+    ]
   } ]
 }
