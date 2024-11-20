@@ -207,6 +207,26 @@ function calculateTotalWithServiceFee(items, serviceFeeRate) {
     return totalPrice;
 }
 
+
+// Function 4: Calculate the total price of items with a non refundable fee
+function calculateTotalWithNonRefundableFee(items, serviceFeeRate) {
+  let totalPrice = 0;
+  for (let i = 0; i < items.length; i++) {
+      totalPrice += items[i].price * items[i].quantity;
+  }
+  let serviceFee = totalPrice * serviceFeeRate;
+  totalPrice += serviceFee;
+
+  console.log("Items in cart:");
+  for (let i = 0; i < items.length; i++) {
+      console.log(`Item: ${items[i].name}, Quantity: ${items[i].quantity}, Price: $${items[i].price}`);
+  }
+  console.log(`Non-refundable Fee: $${serviceFee.toFixed(2)}`);
+  console.log(`Total Price with Service Fee: $${totalPrice.toFixed(2)}`);
+
+  return totalPrice;
+}
+
 // Function 1: Check if a number is even
 function isEven(number) {
     return number % 2 === 0;
