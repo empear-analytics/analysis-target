@@ -1,0 +1,26 @@
+{
+  "usage": "Persist this file inside your repositories as .codescene/custom-quality-gates.json Enable/disable quality gates for specific paths. Rules are tried in order and the first rule that matches will apply. If no rule is matched, all quality gates are enabled. If you want to use a default set of gates specify a rule with matching_content-path **/* as the last rule.",
+  "rule_sets": [
+    {
+      "quality_gates": {
+        "hotspot_decline": true,
+        "critical_health_rules": true,
+        "refactoring_goals": true,
+        "supervise_goals": true,
+        "new_code_health": true,
+        "advisory_health_rules": true,
+        "codeowners_for_critical_code": true
+      },
+      "quality_gates_doc": "Let's use the full rule set for everything related to the Server.",
+      "matching_content_path": "*/src/Server/**",
+      "matching_content_path_doc": "Specify a glob pattern relative to this repo root. **/* means all code, **/*.js means just JavaScript, test/** means all code in a top-level test folder."
+    }, {
+      "quality_gates": {
+        "critical_health_rules": true
+      },
+      "quality_gates_doc": "...but only care about the Critical rules for the Client.",
+      "matching_content_path": "*/src/Client/**",
+      "matching_content_path_doc": "Specify a glob pattern relative to this repo root. **/* means all code, **/*.js means just JavaScript, test/** means all code in a top-level test folder."
+    }
+  ]
+}
