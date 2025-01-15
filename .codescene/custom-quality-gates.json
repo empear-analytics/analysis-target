@@ -12,7 +12,7 @@
         "codeowners_for_critical_code": true
       },
       "quality_gates_doc": "Let's use the full rule set for everything related to the Server.",
-      "matching_content_path": "*/src/Server/**",
+      "matching_content_path": "src/Server/**",
       "matching_content_path_doc": "Specify a glob pattern relative to this repo root. **/* means all code, **/*.js means just JavaScript, test/** means all code in a top-level test folder."
     }, {
       "quality_gates": {
@@ -25,7 +25,7 @@
         "codeowners_for_critical_code": false
       },
       "quality_gates_doc": "...but only care about the Critical rules for the Client.",
-      "matching_content_path": "*/src/Client/**",
+      "matching_content_path": "src/Client/**",
       "matching_content_path_doc": "Specify a glob pattern relative to this repo root. **/* means all code, **/*.js means just JavaScript, test/** means all code in a top-level test folder."
     }
   ]
