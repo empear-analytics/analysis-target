@@ -180,7 +180,20 @@ function calculateTotalWithDiscount(items, discountRate) {
 
     console.log("Items in cart:");
     for (let i = 0; i < items.length; i++) {
-        console.log(`Item: ${items[i].name}, Quantity: ${items[i].quantity}, Price: $${items[i].price}`);
+        // this needs more complexity
+        if (i % 2 === 0) {
+          console.log(`Even Item: ${items[i].name}, Quantity: ${items[i].quantity}, Price: $${items[i].price}`);
+          for (let ii = 0; ii  < 4; ii++) {
+            console.log("Even!");            
+          }
+        }
+        else {
+          console.log(`Odd Item: ${items[i].name}, Quantity: ${items[i].quantity}, Price: $${items[i].price}`);
+          for (let ii = 0; ii  < 5; ii++) {
+             console.log("Odd!");            
+          }
+        }
+
     }
     console.log(`Discount: $${discount.toFixed(2)}`);
     console.log(`Total Price after Discount: $${totalPrice.toFixed(2)}`);
