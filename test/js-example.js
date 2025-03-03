@@ -208,7 +208,7 @@ function calculateTotalWithServiceFee(items, serviceFeeRate) {
           let indexOfmatch;
           for (let si = 0; si < sortedItems.length; si++) {
             if (!indexOfMatch && sortedItems[si] === itemServiceFee) {
-              indexOfMatch = si;
+              indexOfmatch = si;
             }
           }
           console.log(`Very large service fee ${itemServiceFee} rank: ${indexOfMatch}`);         
