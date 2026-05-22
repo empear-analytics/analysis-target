@@ -15,7 +15,7 @@ jobs:
       issues: write
     steps:
       - name: Run refactoring agent
-        uses: codescene-oss/pr-refactoring-agent@main
+        uses: codescene-oss/pr-refactoring-agent@v0.0.1-beta
         with:
           pr_number: ${{ github.event.issue.number }}
           command: ${{ github.event.comment.body }}
