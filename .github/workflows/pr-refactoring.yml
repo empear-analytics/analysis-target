@@ -20,6 +20,5 @@ jobs:
           pr_number: ${{ github.event.issue.number }}
           command: ${{ github.event.comment.body }}
           model: 'github-copilot/claude-sonnet-4.6'
-          release_token: ${{ secrets.CODESCENE_OSS_RELEASE_TOKEN }}
           codescene_token: ${{ secrets.PR_AGENT_CODESCENE_ACCESS_TOKEN }}
           opencode_auth_json: ${{ secrets.PR_AGENT_OPENCODE_AUTH_JSON }}
