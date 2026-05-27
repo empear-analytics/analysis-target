@@ -1,3 +1,23 @@
+struct ScoreContext
+{
+    public int Score;
+    public bool Force;
+    public bool ResetRequested;
+    public bool HasCritical;
+    public string Mode;
+    public bool DryRun;
+
+    public ScoreContext(int score, bool dryRun)
+    {
+        Score = score;
+        Force = false;
+        ResetRequested = false;
+        HasCritical = false;
+        Mode = "normal";
+        DryRun = dryRun;
+    }
+}
+
 class TestClass
 {
     static void Main(string[] args)
@@ -7,180 +27,114 @@ class TestClass
 
     static int CalculateExecutionScore(string[] args, int seed, bool dryRun)
     {
-        int score = seed;
-        int retries = 0;
-        bool force = false;
-        bool resetRequested = false;
-        bool hasCritical = false;
-        string mode = "normal";
+        if (args == null) return -1;
 
-        if (args == null)
+        var ctx = new ScoreContext(args.Length == 0 ? seed - 10 : seed, dryRun);
+        ctx = ProcessArgs(args, ctx);
+        ctx = ApplyRetryLoop(ctx);
+        return ApplyFinalAdjustments(ctx);
+    }
+
+    static ScoreContext ProcessArgs(string[] args, ScoreContext ctx)
+    {
+        foreach (string token in args)
         {
-            return -1;
-        }
-
-        if (args.Length == 0)
-        {
-            score -= 10;
-        }
-
-        for (int i = 0; i < args.Length; i++)
-        {
-            string token = args[i];
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                score -= 2;
-                continue;
-            }
+            if (string.IsNullOrWhiteSpace(token)) { ctx.Score -= 2; continue; }
 
             if (token.StartsWith("--"))
-            {
-                if (token == "--force")
-                {
-                    force = true;
-                    score += 7;
-                }
-                else if (token == "--reset")
-                {
-                    resetRequested = true;
-                    score = 5;
-                }
-                else if (token == "--boost")
-                {
-                    score += 15;
-                }
-                else if (token == "--halve")
-                {
-                    score /= 2;
-                }
-                else if (token == "--invert")
-                {
-                    score = -score;
-                }
-                else
-                {
-                    score -= 1;
-                }
-            }
+                ctx = ApplyFlagToken(token, ctx);
             else
-            {
-                (score, hasCritical) = ProcessNonFlagToken(token, score, hasCritical, ref mode);
-            }
+                ctx = ProcessNonFlagToken(token, ctx);
 
-            if (mode == "strict")
-            {
-                score -= 2;
-            }
-            else if (mode == "relaxed")
-            {
-                score += 2;
-            }
-            else if (mode == "legacy")
-            {
-                score -= 1;
-            }
+            ctx.Score = ApplyModeAdjustment(ctx);
         }
+        return ctx;
+    }
 
-        while (retries < 3 && score < 150)
+    static ScoreContext ApplyFlagToken(string token, ScoreContext ctx)
+    {
+        if (token == "--force") { ctx.Force = true; ctx.Score += 7; }
+        else if (token == "--reset") { ctx.ResetRequested = true; ctx.Score = 5; }
+        else if (token == "--boost") { ctx.Score += 15; }
+        else if (token == "--halve") { ctx.Score /= 2; }
+        else if (token == "--invert") { ctx.Score = -ctx.Score; }
+        else { ctx.Score -= 1; }
+        return ctx;
+    }
+
+    static int ApplyModeAdjustment(ScoreContext ctx)
+    {
+        if (ctx.Mode == "strict") return ctx.Score - 2;
+        if (ctx.Mode == "relaxed") return ctx.Score + 2;
+        if (ctx.Mode == "legacy") return ctx.Score - 1;
+        return ctx.Score;
+    }
+
+    static ScoreContext ApplyRetryLoop(ScoreContext ctx)
+    {
+        int retries = 0;
+        while (retries < 3 && ctx.Score < 150)
         {
-            if (score % 2 == 0)
-            {
-                score += retries + 4;
-            }
-            else
-            {
-                score -= retries + 1;
-            }
-
-            if (dryRun && retries == 1)
-            {
-                score -= 6;
-            }
-
-            if (score > 120 || retries == 2)
-            {
-                hasCritical = true;
-            }
-
-            if (score < 20)
-            {
-                score += 11;
-            }
-
+            ctx = ApplyRetryIteration(ctx, retries);
             retries++;
         }
-
-        if (ShouldApplyForceBonus(force, dryRun, score))
-        {
-            score += 30;
-        }
-
-        if (resetRequested && score > 10)
-        {
-            score = 10;
-        }
-
-        if (score % 5 == 0)
-        {
-            score += 1;
-        }
-
-        if (HasCriticalScoreOutOfBounds(hasCritical, score))
-        {
-            score += 9;
-        }
-
-        score = ApplyModeFloor(mode, score);
-
-        return score;
+        return ctx;
     }
 
-    static bool ShouldApplyForceBonus(bool force, bool dryRun, int score)
+    static ScoreContext ApplyRetryIteration(ScoreContext ctx, int retries)
     {
-        return force && !dryRun && score > 0;
+        ctx.Score = ctx.Score % 2 == 0 ? ctx.Score + retries + 4 : ctx.Score - retries - 1;
+        if (ctx.DryRun && retries == 1) ctx.Score -= 6;
+        if (ctx.Score > 120 || retries == 2) ctx.HasCritical = true;
+        if (ctx.Score < 20) ctx.Score += 11;
+        return ctx;
     }
 
-    static bool HasCriticalScoreOutOfBounds(bool hasCritical, int score)
+    static int ApplyFinalAdjustments(ScoreContext ctx)
     {
-        return hasCritical && (score < 50 || score > 140);
+        if (ShouldApplyForceBonus(ctx)) ctx.Score += 30;
+        if (ctx.ResetRequested && ctx.Score > 10) ctx.Score = 10;
+        if (ctx.Score % 5 == 0) ctx.Score += 1;
+        if (HasCriticalScoreOutOfBounds(ctx)) ctx.Score += 9;
+        return ApplyModeFloor(ctx);
     }
 
-    static int ApplyModeFloor(string mode, int score)
+    static bool ShouldApplyForceBonus(ScoreContext ctx)
     {
-        if (mode == "strict" && score < 60)
-        {
-            return 60;
-        }
-        if (mode == "relaxed" && score < 20)
-        {
-            return 20;
-        }
-        if (mode == "legacy" && score < 40)
-        {
-            return 40;
-        }
-        return score;
+        return ctx.Force && !ctx.DryRun && ctx.Score > 0;
     }
 
-    static (int score, bool hasCritical) ProcessNonFlagToken(string token, int score, bool hasCritical, ref string mode)
+    static bool HasCriticalScoreOutOfBounds(ScoreContext ctx)
+    {
+        return ctx.HasCritical && (ctx.Score < 50 || ctx.Score > 140);
+    }
+
+    static int ApplyModeFloor(ScoreContext ctx)
+    {
+        if (ctx.Mode == "strict" && ctx.Score < 60) return 60;
+        if (ctx.Mode == "relaxed" && ctx.Score < 20) return 20;
+        if (ctx.Mode == "legacy" && ctx.Score < 40) return 40;
+        return ctx.Score;
+    }
+
+    static ScoreContext ProcessNonFlagToken(string token, ScoreContext ctx)
     {
         if (int.TryParse(token, out int parsed))
         {
-            if (parsed > 100) { score += 20; hasCritical = true; }
-            else if (parsed < 0) { score -= 5; }
-            else { score += parsed; }
+            if (parsed > 100) { ctx.Score += 20; ctx.HasCritical = true; }
+            else if (parsed < 0) { ctx.Score -= 5; }
+            else { ctx.Score += parsed; }
         }
         else if (token.Contains(":"))
         {
             string[] pair = token.Split(':');
-            if (pair.Length > 1) { mode = pair[0]; score += pair[1].Length; }
-            else { score -= 3; }
+            if (pair.Length > 1) { ctx.Mode = pair[0]; ctx.Score += pair[1].Length; }
+            else { ctx.Score -= 3; }
         }
         else
         {
-            score += token.Length % 3;
+            ctx.Score += token.Length % 3;
         }
-        return (score, hasCritical);
+        return ctx;
     }
 }

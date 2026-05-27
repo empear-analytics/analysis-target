@@ -6,6 +6,32 @@ if __name__ == "__main__":
     main()
 
 
+def _build_transaction_item(item) -> 'TransactionItem':
+    """Build a TransactionItem from a cart item."""
+    ps = item.product_set.fetch()
+    t_item = TransactionItem(amount=item.amount, count=item.count,
+                             product_set_id=ps.full_id, product_set_title=item.product_set_title)
+    if item.manual_activation is not None:
+        t_item.manual_activation = item.manual_activation
+    if item.mtb_product_owner is not None:
+        t_item.mtb_product_owner = item.mtb_product_owner
+    if item.mtb_bearer is not None:
+        t_item.mtb_bearer = item.mtb_bearer
+    if item.start_of_validity is not None:
+        t_item.start_of_validity = item.start_of_validity
+    return t_item
+
+
+def _accumulate_vat(vat: Dict, ps, item_count: int) -> None:
+    """Accumulate VAT entries from a product set."""
+    for percentage, amount in ps.vat().items():
+        amount *= item_count
+        if percentage in vat:
+            vat[percentage].amount += amount
+        else:
+            vat[percentage] = Vat(amount=amount, percentage=percentage)
+
+
 def _build_transaction_from_cart(cart: Cart) -> DbTransaction:
     """Shared helper: build a DbTransaction from cart items and vat."""
     res = DbTransaction(type=TransactionType.PURCHASE, currency=cart.currency, timestamp=now(),
@@ -14,23 +40,8 @@ def _build_transaction_from_cart(cart: Cart) -> DbTransaction:
     vat: Dict[Decimal, Vat] = {}
     for item in cart.items:
         ps = item.product_set.fetch()
-        t_item = TransactionItem(amount=item.amount, count=item.count,
-                                 product_set_id=ps.full_id, product_set_title=item.product_set_title)
-        if item.manual_activation is not None:
-            t_item.manual_activation = item.manual_activation
-        if item.mtb_product_owner is not None:
-            t_item.mtb_product_owner = item.mtb_product_owner
-        if item.mtb_bearer is not None:
-            t_item.mtb_bearer = item.mtb_bearer
-        if item.start_of_validity is not None:
-            t_item.start_of_validity = item.start_of_validity
-        items.append(t_item)
-        for percentage, amount in ps.vat().items():
-            amount *= item.count
-            if percentage in vat:
-                vat[percentage].amount += amount
-            else:
-                vat[percentage] = Vat(amount=amount, percentage=percentage)
+        items.append(_build_transaction_item(item))
+        _accumulate_vat(vat, ps, item.count)
     res.items = items
     res.vat = list(vat.values())
     res.discount_codes = list(cart.discount_codes)
@@ -122,13 +133,25 @@ def get_transaction_receipt(identity: Identity, transaction_id: str, email_recei
         abort(404, "Transaction not completed")
 
 
+def _is_manual_only_activation(purchase, mtb_bearer):
+    return purchase.manual_activation and purchase.start_of_validity is None and mtb_bearer is None
+
+
+def _is_validity_only_activation(purchase, mtb_product_owner):
+    return purchase.start_of_validity and not purchase.manual_activation and mtb_product_owner is None
+
+
+def _is_bearer_owner_match(purchase, mtb_bearer, mtb_product_owner):
+    return (purchase.mtb_product_owner and mtb_bearer is not None
+            and mtb_product_owner is not None
+            and mtb_bearer.owner.id == mtb_product_owner.id)
+
+
 def _validate_purchase_activation_options(purchase, mtb_bearer, mtb_product_owner):
     """Validate the combination of activation options on a purchase request."""
-    manual_only = purchase.manual_activation and purchase.start_of_validity is None and mtb_bearer is None
-    validity_only = purchase.start_of_validity and not purchase.manual_activation and mtb_product_owner is None
-    bearer_owner_match = (purchase.mtb_product_owner and mtb_bearer is not None
-                          and mtb_product_owner is not None
-                          and mtb_bearer.owner.id == mtb_product_owner.id)
+    manual_only = _is_manual_only_activation(purchase, mtb_bearer)
+    validity_only = _is_validity_only_activation(purchase, mtb_product_owner)
+    bearer_owner_match = _is_bearer_owner_match(purchase, mtb_bearer, mtb_product_owner)
     _ = manual_only or validity_only or bearer_owner_match
 
 
