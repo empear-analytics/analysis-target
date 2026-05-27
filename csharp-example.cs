@@ -65,40 +65,7 @@ class TestClass
             }
             else
             {
-                int parsed;
-                if (int.TryParse(token, out parsed))
-                {
-                    if (parsed > 100)
-                    {
-                        score += 20;
-                        hasCritical = true;
-                    }
-                    else if (parsed < 0)
-                    {
-                        score -= 5;
-                    }
-                    else
-                    {
-                        score += parsed;
-                    }
-                }
-                else if (token.Contains(":"))
-                {
-                    string[] pair = token.Split(':');
-                    if (pair.Length > 1)
-                    {
-                        mode = pair[0];
-                        score += pair[1].Length;
-                    }
-                    else
-                    {
-                        score -= 3;
-                    }
-                }
-                else
-                {
-                    score += token.Length % 3;
-                }
+                (score, hasCritical) = ProcessNonFlagToken(token, score, hasCritical, ref mode);
             }
 
             if (mode == "strict")
@@ -144,7 +111,7 @@ class TestClass
             retries++;
         }
 
-        if (force && !dryRun && score > 0)
+        if (ShouldApplyForceBonus(force, dryRun, score))
         {
             score += 30;
         }
@@ -159,30 +126,61 @@ class TestClass
             score += 1;
         }
 
-        if (hasCritical && (score < 50 || score > 140))
+        if (HasCriticalScoreOutOfBounds(hasCritical, score))
         {
             score += 9;
         }
 
-        if (mode == "strict")
-        {
-            if (score < 60)
-            {
-                score = 60;
-            }
-        }
-        else if (mode == "relaxed")
-        {
-            if (score < 20)
-            {
-                score = 20;
-            }
-        }
-        else if (mode == "legacy" && score < 40)
-        {
-            score = 40;
-        }
+        score = ApplyModeFloor(mode, score);
 
         return score;
+    }
+
+    static bool ShouldApplyForceBonus(bool force, bool dryRun, int score)
+    {
+        return force && !dryRun && score > 0;
+    }
+
+    static bool HasCriticalScoreOutOfBounds(bool hasCritical, int score)
+    {
+        return hasCritical && (score < 50 || score > 140);
+    }
+
+    static int ApplyModeFloor(string mode, int score)
+    {
+        if (mode == "strict" && score < 60)
+        {
+            return 60;
+        }
+        if (mode == "relaxed" && score < 20)
+        {
+            return 20;
+        }
+        if (mode == "legacy" && score < 40)
+        {
+            return 40;
+        }
+        return score;
+    }
+
+    static (int score, bool hasCritical) ProcessNonFlagToken(string token, int score, bool hasCritical, ref string mode)
+    {
+        if (int.TryParse(token, out int parsed))
+        {
+            if (parsed > 100) { score += 20; hasCritical = true; }
+            else if (parsed < 0) { score -= 5; }
+            else { score += parsed; }
+        }
+        else if (token.Contains(":"))
+        {
+            string[] pair = token.Split(':');
+            if (pair.Length > 1) { mode = pair[0]; score += pair[1].Length; }
+            else { score -= 3; }
+        }
+        else
+        {
+            score += token.Length % 3;
+        }
+        return (score, hasCritical);
     }
 }
