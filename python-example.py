@@ -5,6 +5,8 @@ def main():
 if __name__ == "__main__":
     main()
 
+def just_a_small_fn_no_improvement():
+    pass
 
 def create_transaction_from_cart(cart: Cart) -> DbTransaction:
     """Create a transaction based on cart information"""
