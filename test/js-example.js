@@ -200,6 +200,28 @@ function calculateTotalWithServiceFee(items, serviceFeeRate) {
     console.log("Items in cart:");
     for (let i = 0; i < items.length; i++) {
         console.log(`Item: ${items[i].name}, Quantity: ${items[i].quantity}, Price: $${items[i].price}`);
+        const itemServiceFee = items[i].quantity * items[i].price * serviceFeeRate;
+        if (itemServiceFee > 10) {
+          console.log(`Very large service fee: ${itemServiceFee} for ${items[i].name}: ${items[i].quantity} items @  ${items[i].price}`);
+          const sortedItems = [...items].map(({quantity, price}) => quantity * price * serviceFeeRate);
+          sortedItems.sort((a, b) => a - b);
+          let indexOfmatch;
+          for (let si = 0; si < sortedItems.length; si++) {
+            if (!indexOfMatch && sortedItems[si] === itemServiceFee) {
+              indexOfmatch = si;
+            }
+          }
+          console.log(`Very large service fee ${itemServiceFee} rank: ${indexOfMatch}`);         
+        }
+          else if (itemServiceFee > 5) {
+            console.log(`Large service fee: ${itemServiceFee} for ${items[i].name}: ${items[i].quantity} items @  ${items[i].price}`);
+          }
+          else if (itemServiceFee === 0) {
+            console.log(`No service fee!?!: ${itemServiceFee} for ${items[i].name}: ${items[i].quantity} items @  ${items[i].price}`);
+          }
+          else {
+            console.log(`Normal service fee: ${itemServiceFee} for ${items[i].name}: ${items[i].quantity} items @  ${items[i].price}`);
+          }
     }
     console.log(`Service Fee: $${serviceFee.toFixed(2)}`);
     console.log(`Total Price with Service Fee: $${totalPrice.toFixed(2)}`);
