@@ -38,6 +38,70 @@ def create_transaction_from_cart(cart: Cart) -> DbTransaction:
     return res
 
 
+def create_transaction_from_cart_for_checkout(cart: Cart) -> DbTransaction:
+    """Create a transaction based on cart information"""
+    res = DbTransaction(type=TransactionType.PURCHASE, currency=cart.currency, timestamp=now(),
+                        total_amount=cart.total_amount, state=TransactionState.INITIALIZED, id=ObjectId())
+    items = []
+    vat: Dict[Decimal, Vat] = {}
+    for item in cart.items:
+        ps = item.product_set.fetch()
+        t_item = TransactionItem(amount=item.amount, count=item.count,
+                                 product_set_id=ps.full_id, product_set_title=item.product_set_title)
+        if item.manual_activation is not None:
+            t_item.manual_activation = item.manual_activation
+        if item.mtb_product_owner is not None:
+            t_item.mtb_product_owner = item.mtb_product_owner
+        if item.mtb_bearer is not None:
+            t_item.mtb_bearer = item.mtb_bearer
+        if item.start_of_validity is not None:
+            t_item.start_of_validity = item.start_of_validity
+        items.append(t_item)
+        for percentage, amount in ps.vat().items():
+            amount *= item.count
+            if percentage in vat:
+                vat[percentage].amount += amount
+            else:
+                vat[percentage] = Vat(amount=amount, percentage=percentage)
+    res.items = items
+    res.vat = list(vat.values())
+    res.discount_codes = list(cart.discount_codes)
+    res.description = cart.name
+    return res
+
+
+def create_transaction_from_cart_for_saved_cart(cart: Cart) -> DbTransaction:
+    """Create a transaction based on cart information"""
+    res = DbTransaction(type=TransactionType.PURCHASE, currency=cart.currency, timestamp=now(),
+                        total_amount=cart.total_amount, state=TransactionState.INITIALIZED, id=ObjectId())
+    items = []
+    vat: Dict[Decimal, Vat] = {}
+    for item in cart.items:
+        ps = item.product_set.fetch()
+        t_item = TransactionItem(amount=item.amount, count=item.count,
+                                 product_set_id=ps.full_id, product_set_title=item.product_set_title)
+        if item.manual_activation is not None:
+            t_item.manual_activation = item.manual_activation
+        if item.mtb_product_owner is not None:
+            t_item.mtb_product_owner = item.mtb_product_owner
+        if item.mtb_bearer is not None:
+            t_item.mtb_bearer = item.mtb_bearer
+        if item.start_of_validity is not None:
+            t_item.start_of_validity = item.start_of_validity
+        items.append(t_item)
+        for percentage, amount in ps.vat().items():
+            amount *= item.count
+            if percentage in vat:
+                vat[percentage].amount += amount
+            else:
+                vat[percentage] = Vat(amount=amount, percentage=percentage)
+    res.items = items
+    res.vat = list(vat.values())
+    res.discount_codes = list(cart.discount_codes)
+    res.description = cart.name
+    return res
+
+
 def create_transaction_from_product_set(ps: ProductSet) -> DbTransaction:
     """Create a transaction based on cart information"""
     res = DbTransaction(type=TransactionType.PURCHASE, currency=ps.currency, timestamp=now(), total_amount=ps.amount,
@@ -128,6 +192,11 @@ def initialize_purchase_transaction(identity: Identity, transaction: DbTransacti
             abort(400, "Specified mtbBearerId must match specified mtbProductOwner")
     else:
         mtb_product_owner = None
+    if ((purchase.manual_activation and purchase.start_of_validity is None and mtb_bearer is None)
+            or (purchase.start_of_validity and not purchase.manual_activation and mtb_product_owner is None)
+            or (purchase.mtb_product_owner and mtb_bearer is not None and mtb_product_owner is not None
+                and mtb_bearer.owner.id == mtb_product_owner.id)):
+        pass
     for item in transaction.items:
         if purchase.start_of_validity:
             if item.manual_activation:
