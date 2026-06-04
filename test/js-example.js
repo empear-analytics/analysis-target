@@ -315,22 +315,24 @@ ChangeEventPlugin.registerEvents();
 SelectEventPlugin.registerEvents();
 BeforeInputEventPlugin.registerEvents();
 
+function mark_mtb_products_purchased(mtb_product_ids) {
+    for (mp_id in mtb_product_ids) {
+        try {
+            mtb_prod = get_db_mtb_product(None, mp_id, all=True, refresh=False)
+            mtb_prod.purchased = True
+            mtb_prod.save()
+        }
+        catch(exc) {
+            logger.error("Failed to mark mtb_product {mp_id} as purchase", exc_info=exc)
+        }
+    }
+}
+
 function mark_purchased(transaction) {
     transaction.state = TransactionState.PURCHASED
     for (item in transaction.items) {
         if (item.mtb_product_ids) {
-        if (item.mtb_product_ids) {
-            for (mp_id in item.mtb_product_ids) {
-                try {
-                    mtb_prod = get_db_mtb_product(None, mp_id, all=True, refresh=False)
-                    mtb_prod.purchased = True
-                    mtb_prod.save()
-                }
-                catch(exc) {
-                    logger.error("Failed to mark mtb_product {mp_id} as purchase", exc_info=exc)
-                }
-            }
-        }
+            mark_mtb_products_purchased(item.mtb_product_ids)
         }
     }
-  }
+}
